@@ -20,7 +20,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-libspec = { git = "git@github.com:drhodes/libspec.git" }
+libspec = { git = "https://github.com/drhodes/libspec.git" }
 torch = { index = "pytorch-cpu" }
 
 [[tool.uv.index]]
