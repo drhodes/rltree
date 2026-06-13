@@ -1,0 +1,48 @@
+# Session Handover: rltree Prototype Design & Specification
+
+## 1. Project Overview
+**Project Name:** `rltree`
+**Goal:** Create an RL-driven system for generating hierarchical structured data (initially SVGs) using explicit tree-building operations (`add_child`, `close_node`) instead of sequential token prediction.
+**Rapid PoC Constraint:** The entire pipeline (data generation, training, inference) must complete in **< 3 minutes** on local hardware.
+
+## 2. Technical Discussion Summary (Socratic Phase)
+- **Mathematical Intuition:** Discussed using Spectral Graph Theory to characterize trees. The **spectral radius** (largest eigenvalue of the adjacency matrix) measures **"splay"** or **"fanout"** (branching density).
+- **Topology Awareness:** Moving from 1D LLM sequences to explicit trees removes syntax errors.
+- **Algebraic Representation:** Explored Adjacency Matrices and Tensors. Decided to use **Depth-Aware Variable Scopes** (HRL-style) instead of complex tensors to keep the state space manageable for rapid PoC.
+- **State Representation:** Settled on a localized tuple: `(Depth, Parent_Tag, Current_Tag, Sibling_Index, Total_Siblings)`.
+- **Retrieval-Augmented Generation (RAG):** Future vision involves storing spectral embeddings of ASTs/SVGs in a Vector Database to guide the RL agent.
+
+## 3. Current Implementation Status
+### 3.1 Documentation
+- **Design Document:** `./design/prototype-design.md` (Detailed architecture and mathematical rationale).
+- **PoC Plan:** `./plans/poc_execution.md` (Original full plan) and `./plans/spec_only_plan.md` (Current focus).
+
+### 3.2 Libspec Development Workflow
+We are strictly following the **libspec dev workflow**:
+1. **Author Spec** (Completed): Created `spec/rltree.py`.
+2. **Register Spec** (Completed): Updated `spec/main_spec.py`.
+3. **Diff Spec** (Completed): Ran `mcp_libspec_diff`.
+4. **Declare Dependencies** (Completed): Linked PoC requirements using `mcp_libspec_declare_dependency`.
+5. **Build/Snapshot** (In Progress): The system is currently in a `PENDING` state. Dependencies are logged in `.libspec/libspec.jsonl`, but no numbered snapshot (#0) exists yet.
+
+### 3.3 Specification Details (`spec/rltree.py`)
+- `RapidPoC`: 3-minute execution constraint.
+- `SyntheticSvgDataset`: 50-100 tiny SVGs (max 6 nodes).
+- `DfsTupleExtraction`: DFS-based feature extraction.
+- `MinimalPytorchMlp`: Small MLP (2x64 units) for fast training.
+- `BehavioralCloningBootstrap`: Initial supervised learning phase.
+- `DenseReinforceFineTuning`: RL fine-tuning with per-step rewards.
+
+## 4. Current State & Blockers
+- **Libspec CLI:** The `build` command is missing in the current version. Snapshot creation appears to be implicit or handled via other commands.
+- **Database:** `.libspec/libspec.jsonl` contains `dependency` events with `snapshot_id: "PENDING"`.
+- **Dependencies:** `BehavioralCloningBootstrap` depends on `SyntheticSvgDataset` and `MinimalPytorchMlp`. `DenseReinforceFineTuning` depends on `BehavioralCloningBootstrap`.
+
+## 5. Recommended Next Steps for Successor LLM
+1. **Identify Snapshot Finalization:** Determine the correct `libspec` command to move from `PENDING` to a permanent snapshot (e.g., check `libspec link` or if `diff --commit` exists).
+2. **Review Spec:** Read `spec/rltree.py` to ensure requirements are sufficiently granular.
+3. **Transition to TDD:** Once the spec is built, proceed to Step 4 of the workflow: writing tests for the ingestion pipeline and the environment.
+4. **Implementation:** Proceed to implement the synthetic generator and the training loop as specified.
+
+---
+*End of Handover*
